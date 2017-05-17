@@ -1,0 +1,129 @@
+<html>
+<head>
+
+  <script src="./js/three.js"></script>
+  <script src="./js/leap-0.6.4.js"></script>
+  <script src="./js/leap-plugins-0.1.11pre.js"></script>
+  <script src="./js/leap-widgets-0.1.0.js"></script>
+  <script src="./js/OrbitControls.js"></script>
+  <script src="./js/libs/stats.min.js"></script>
+    <script src="./js/libs/dat.gui.min.js"></script>
+  
+    <script src="./js/Detector.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+    }
+  </style>
+
+</head>
+<body>
+
+</body>
+
+<script>
+
+  var width = window.innerWidth/1.1,
+    height = window.innerHeight/1.1;
+
+  var scene = new THREE.Scene();
+  var renderer = new THREE.WebGLRenderer({antialias:true});
+  document.body.appendChild(renderer.domElement);
+  var camera = new THREE.PerspectiveCamera(45, width / height, 1, 10000);
+
+  camera.position.set(-10, 729 * 0.9, 613 * 0.9);
+  camera.rotation.set(-0.871653376, -0.8185568, -0.7150720);
+  camera.lookAt(new THREE.Vector3(0, 160, 0));
+
+  renderer.setSize(width, height);
+  renderer.shadowMapEnabled = true;
+  renderer.shadowMapType = THREE.PCFSoftShadowMap;
+  renderer.setClearColorHex(0x550055, 1.0);
+
+
+  var axisHelper = new THREE.AxisHelper( 100 );
+  scene.add( axisHelper );
+
+  var controls = new THREE.OrbitControls( camera, renderer.domElement );
+
+  var light = new THREE.SpotLight( 0xffffff, 1 );
+  light.position.set(0,0,0);
+  light.target.position.set( 0, 100, 0 );
+  scene.add(light.target);
+  light.castShadow = true;
+  light.shadowCameraVisible = false;
+  light.shadowDarkness = 0.8;
+
+  var dolly = new THREE.Object3D;
+  dolly.position.set(0,400,300);
+
+  scene.add(dolly);
+  dolly.add(light);
+
+  var floorTexture = new THREE.ImageUtils.loadTexture( 'textures/hardwood2_diffuse.jpg');
+  floorTexture.wrapS = floorTexture.wrapT = THREE.RepeatWrapping; 
+  floorTexture.anisotropy = 4;
+  floorTexture.needsUpdate = true; 
+  floorTexture.repeat.set( 2,2  );
+  var floorMaterial = new THREE.MeshBasicMaterial( { map: floorTexture, side: THREE.DoubleSide } );  
+  var plane = new THREE.Mesh(
+    new THREE.PlaneGeometry(320,320),
+    floorMaterial
+  );
+
+  plane.scale.multiplyScalar(3);
+  plane.rotation.x = Math.PI / 2;
+  plane.position.set(0,-10,-150);
+  plane.receiveShadow = true;
+  camera.lookAt( plane.position );
+  scene.add(plane);
+
+
+var texture = THREE.ImageUtils.loadTexture('textures/lava/lavatile.jpg'); 
+
+var material = new THREE.MeshPhongMaterial({ map: texture }); 
+  var box = new THREE.Mesh(new THREE.BoxGeometry(60,60,60), material);
+  box.castShadow = true;
+  box.receiveShadow = true;
+
+  var collider = new THREE.Mesh(new THREE.PlaneGeometry(59,59));
+  collider.position.set(140 , 140, 0);
+  collider.add(box);
+  scene.add(collider);  
+
+     texture = THREE.ImageUtils.loadTexture('textures/planets/earth_atmos_2048.jpg'); 
+
+  material = new THREE.MeshPhongMaterial({ map: texture }); 
+    var geometry = new THREE.SphereGeometry(50, 64, 64); 
+    var sphere = new THREE.Mesh(geometry, material);
+    sphere.castShadow = true;
+    sphere.castShadow = true; 
+
+var collider2 = new THREE.Mesh(new THREE.PlaneGeometry(59,59));
+  collider2.position.set(0, 130, 0);
+  collider2.add(sphere);
+  scene.add(collider2);  
+
+
+
+  // Set up plugins
+
+  Leap.loop()
+    .use('boneHand', {
+
+      targetEl: document.body,
+      arm: true,
+      scene: scene,
+      render: function(){
+        renderer.render(scene, camera)
+      }
+    });
+
+  new InteractablePlane(collider, Leap.loopController);
+  new InteractablePlane(collider2, Leap.loopController);
+
+</script>
+
+</html>
+</html>
